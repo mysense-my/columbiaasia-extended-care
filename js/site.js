@@ -30,7 +30,7 @@ window.SPRINGS={"s15": "linear(0, 0.0107, 0.0387, 0.0788, 0.1271, 0.1803, 0.2361
     var loop = function (t) { lenis.raf(t); requestAnimationFrame(loop); };
     requestAnimationFrame(loop);
     // Framer marks scrollable inner elements so Lenis leaves them alone
-    document.querySelectorAll(".tcard__scroll, .drawer__bio").forEach(function (el) { el.setAttribute("data-lenis-prevent", "true"); });
+    document.querySelectorAll(".drawer__bio").forEach(function (el) { el.setAttribute("data-lenis-prevent", "true"); });
   }
   function scrollToTarget(el) {
     var off = -(parseFloat(getComputedStyle(el).scrollMarginTop) || 0);
@@ -76,6 +76,40 @@ window.SPRINGS={"s15": "linear(0, 0.0107, 0.0387, 0.0788, 0.1271, 0.1803, 0.2361
     inView.forEach(function (el) { io.observe(el); });
   } else {
     inView.forEach(reveal);
+  }
+
+  /* ---------- hero slideshow: crossfade every 5s (paused off-screen, in background tabs, and for reduced motion) ---------- */
+  var slides = Array.prototype.slice.call(document.querySelectorAll(".hero__img"));
+  if (slides.length > 1) {
+    var loadSlide = function (img) {
+      if (img.getAttribute("data-src")) {
+        if (img.getAttribute("data-srcset")) img.srcset = img.getAttribute("data-srcset");
+        img.src = img.getAttribute("data-src");
+        img.removeAttribute("data-src"); img.removeAttribute("data-srcset");
+      }
+      return img.decode ? img.decode().catch(function () {}) : Promise.resolve();
+    };
+    window.addEventListener("load", function () { slides.slice(1).forEach(loadSlide); });
+    var cur = 0, z = 1, slideTimer = null, heroOn = true;
+    var HOLD = 5000, FADE = 1200;
+    var schedule = function () {
+      clearTimeout(slideTimer);
+      if (!reduce && heroOn && !document.hidden) slideTimer = setTimeout(nextSlide, HOLD);
+    };
+    var nextSlide = function () {
+      var from = slides[cur], to = slides[(cur + 1) % slides.length];
+      loadSlide(to).then(function () {
+        to.style.zIndex = ++z;
+        to.classList.add("is-on");
+        setTimeout(function () { from.classList.remove("is-on"); }, FADE + 50);
+        cur = (cur + 1) % slides.length;
+        schedule();
+      });
+    };
+    document.addEventListener("visibilitychange", schedule);
+    if ("IntersectionObserver" in window) {
+      new IntersectionObserver(function (en) { heroOn = en[0].isIntersecting; schedule(); }).observe(document.querySelector(".hero"));
+    } else schedule();
   }
 
   /* ---------- nav: tablet / phone menu ---------- */
