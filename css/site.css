@@ -234,10 +234,10 @@ ul, ol { padding: 0; list-style: none; }
 .hero__text { display: flex; flex-direction: column; gap: 16px; }
 .hero__ctas { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
 @media (min-width: 810px) and (max-width: 1199.98px) { .hero__content { padding: 149px 32px 64px; } }
+@media (max-width: 1199.98px) { .hero__img { object-position: var(--pos-m, 50% 50%); } }
 @media (max-width: 809.98px) {
   .hero__content { padding: 120px 16px 32px; }
   .hero__stack { gap: 32px; }
-  .hero__img { object-position: var(--pos-m, 50% 50%); }
 }
 
 /* ---------- 2-column intro with stats (home "About Preview") ---------- */
